@@ -1,0 +1,4 @@
+setup:
+  addons:
+  - plan: heroku-redis:mini
+    as: REDIS
