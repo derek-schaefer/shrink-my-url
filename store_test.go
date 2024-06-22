@@ -6,7 +6,6 @@ import (
 	"time"
 
 	shrink "github.com/derek-schaefer/shrink-my-url"
-	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -117,9 +116,4 @@ func TestRedisStoreDeleteLink(t *testing.T) {
 	assert.Equal(t, "", link)
 	assert.Equal(t, int64(0), visits)
 	assert.NotNil(t, err)
-}
-
-func TestStoreError(t *testing.T) {
-	assert.Equal(t, shrink.ErrNil, shrink.StoreError(redis.Nil))
-	assert.Equal(t, shrink.ErrExists, shrink.StoreError(shrink.ErrExists))
 }

@@ -2,18 +2,11 @@ package shrinkmyurl
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/rand"
 	"net/url"
 
 	"github.com/sqids/sqids-go"
-)
-
-var (
-	ErrInvalidURL   = errors.New("shortener: invalid URL")
-	ErrDoesNotExist = errors.New("shortener: id does not exist")
-	ErrMaxRetries   = errors.New("shortener: max retries exceeded")
 )
 
 // Represents a shortened URL record.

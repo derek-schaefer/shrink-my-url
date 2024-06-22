@@ -2,16 +2,10 @@ package shrinkmyurl
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
-)
-
-var (
-	ErrNil    = errors.New("store: key not found")
-	ErrExists = errors.New("store: key already exists")
 )
 
 // A service for shortening and expanding URLs.
@@ -119,7 +113,7 @@ func (s *RedisStore) AddLink(ctx context.Context, id, url string) (bool, error) 
 	})
 
 	if err != nil {
-		return false, StoreError(err)
+		return false, NormalizeError(err)
 	}
 
 	var exists bool
@@ -150,7 +144,7 @@ func (s *RedisStore) ExpandLink(ctx context.Context, id string) (string, int64, 
 	})
 
 	if err != nil {
-		return "", 0, StoreError(err)
+		return "", 0, NormalizeError(err)
 	}
 
 	link := cmds[0].(*redis.StringCmd).Val()
@@ -168,19 +162,10 @@ func (s *RedisStore) DeleteLink(ctx context.Context, id string) error {
 		return nil
 	})
 
-	return StoreError(err)
+	return NormalizeError(err)
 }
 
 // Get the visits count ID for the given link ID.
 func visitId(id string) string {
 	return fmt.Sprintf("%s:visits", id)
-}
-
-// Converts errors to normalized values.
-func StoreError(err error) error {
-	if err == redis.Nil {
-		return ErrNil
-	}
-
-	return err
 }

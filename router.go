@@ -3,7 +3,6 @@ package shrinkmyurl
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,11 +15,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-var (
-	templates *template.Template
-
-	xForwardedProto = http.CanonicalHeaderKey("X-Forwarded-Proto")
-)
+var templates *template.Template
 
 func init() {
 	mustParseTemplates()
@@ -40,7 +35,7 @@ type Router struct {
 // Create a new router with the given options.
 func NewRouter(ops RouterOptions) *Router {
 	if ops.Shortener == nil {
-		panic(errors.New("shortener is required"))
+		panic(ErrShortenerRequired)
 	}
 
 	return &Router{RouterOptions: ops}
@@ -150,7 +145,7 @@ func (rs *Router) apiShortenLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !rs.Shortener.Validate(payload.ExpandedUrl) {
-		handleError(w, errors.New("invalid url"), http.StatusBadRequest)
+		handleError(w, ErrInvalidURL, http.StatusBadRequest)
 		return
 	}
 
@@ -181,7 +176,7 @@ func (rs *Router) apiExpandLink(w http.ResponseWriter, r *http.Request) {
 // Get the request URL from the request, factoring in the scheme and host.
 func (rs *Router) requestURL(r *http.Request) url.URL {
 	if r.URL == nil {
-		panic(errors.New("request URL is nil"))
+		panic(ErrURLIsRequired)
 	}
 
 	host := *r.URL
@@ -246,7 +241,7 @@ func mustParseTemplates() {
 // Redirect to HTTPS if the request is not secure.
 func redirectToHTTPS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get(xForwardedProto) != "https" {
+		if r.Header.Get("X-Forwarded-Proto") != "https" {
 			http.Redirect(w, r, fmt.Sprintf("https://%s%s", r.Host, r.RequestURI), http.StatusMovedPermanently)
 			return
 		}
